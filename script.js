@@ -1,11 +1,88 @@
-/* --- اتصال به دیتابیس ابری Supabase --- */
+/* --- اتصال امن به دیتابیس ابری Supabase --- */
 const SUPABASE_URL = "https://sshotppczbgjogoueebt.supabase.co";
 const SUPABASE_KEY = "sb_publishable_woyVPRZ6JbCC8DtiVlpPog_MgMOb-nS";
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 let currentUser = null;
-let authMode = "login"; // login | signup
 let syncTimeout = null;
+
+/* --- انیمیشن تعاملی اشکال سه‌بعدی با حرکت موس --- */
+const visualStage = document.getElementById("auth-visual-stage");
+if (visualStage) {
+    visualStage.addEventListener("mousemove", (e) => {
+        const rect = visualStage.getBoundingClientRect();
+        const normX = ((e.clientX - rect.left) / rect.width) - 0.5;
+        const normY = ((e.clientY - rect.top) / rect.height) - 0.5;
+
+        visualStage.querySelectorAll(".floating-3d-card").forEach(card => {
+            const depth = Number(card.dataset.depth) || 20;
+            const moveX = normX * depth;
+            const moveY = normY * depth;
+            const rotY = normX * 14;
+            const rotX = -normY * 14;
+            card.style.transform = `translate3d(${moveX}px, ${moveY}px, 0) perspective(500px) rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+        });
+    });
+
+    visualStage.addEventListener("mouseleave", () => {
+        visualStage.querySelectorAll(".floating-3d-card").forEach(card => {
+            card.style.transform = "translate3d(0, 0, 0)";
+        });
+    });
+}
+
+/* --- ورود اختصاصی اعضا (بدون ثبت‌نام عمومی) --- */
+document.getElementById("auth-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const errEl = document.getElementById("auth-error");
+    const btn = document.getElementById("auth-submit-btn");
+    errEl.classList.add("hidden");
+
+    if (!sb) {
+        errEl.textContent = "کتابخانه ارتباط با سرور لود نشد. اتصال اینترنت را بررسی و صفحه را رفرش کنید.";
+        errEl.classList.remove("hidden");
+        return;
+    }
+
+    const rawUser = document.getElementById("auth-username").value.trim().toLowerCase().replace(/[^a-z0-9._-]/g, "");
+    const password = document.getElementById("auth-password").value;
+
+    if (rawUser.length < 2) {
+        errEl.textContent = "لطفاً نام کاربری انگلیسی خود را وارد کنید.";
+        errEl.classList.remove("hidden");
+        return;
+    }
+
+    const virtualEmail = `${rawUser}@studyapp.local`;
+    btn.disabled = true;
+    btn.textContent = "در حال ورود...";
+
+    try {
+        const { data, error } = await sb.auth.signInWithPassword({
+            email: virtualEmail,
+            password
+        });
+        if (error) throw error;
+        if (data && data.user) {
+            await onUserAuthenticated(data.user);
+        }
+    } catch (err) {
+        errEl.textContent = err.message.includes("Invalid login")
+            ? "نام کاربری یا رمز عبور اشتباه است."
+            : "خطا در ورود: " + err.message;
+        errEl.classList.remove("hidden");
+    } finally {
+        btn.disabled = false;
+        btn.textContent = "ورود به داشبورد";
+    }
+});
+
+document.getElementById("logout-btn").addEventListener("click", async () => {
+    if (sb) await sb.auth.signOut();
+    currentUser = null;
+    document.getElementById("main-app").classList.add("hidden");
+    document.getElementById("auth-screen").classList.remove("hidden");
+});
 
 const SUBJECTS = [
     "حسابان", "حسابان2", "ریاضی", "گسسته",
@@ -44,92 +121,12 @@ let waveChart = null;
 let longChart = null;
 let selectsInitialized = false;
 
-/* --- مدیریت ورود و ثبت‌نام کاربران --- */
-document.getElementById("tab-login").addEventListener("click", () => switchAuthTab("login"));
-document.getElementById("tab-signup").addEventListener("click", () => switchAuthTab("signup"));
-
-function switchAuthTab(mode) {
-    authMode = mode;
-    document.getElementById("tab-login").classList.toggle("active", mode === "login");
-    document.getElementById("tab-signup").classList.toggle("active", mode === "signup");
-    document.getElementById("name-field-group").classList.toggle("hidden", mode === "login");
-    document.getElementById("auth-submit-btn").textContent = mode === "login" ? "ورود به داشبورد" : "ساخت حساب و ورود";
-    document.getElementById("auth-error").classList.add("hidden");
-}
-
-document.getElementById("auth-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const errEl = document.getElementById("auth-error");
-    const btn = document.getElementById("auth-submit-btn");
-    errEl.classList.add("hidden");
-
-    const rawUser = document.getElementById("auth-username").value.trim().toLowerCase().replace(/[^a-z0-9._-]/g, "");
-    const password = document.getElementById("auth-password").value;
-    const fullName = document.getElementById("auth-fullname").value.trim() || rawUser;
-
-    if (rawUser.length < 3) {
-        errEl.textContent = "نام کاربری باید حداقل ۳ حرف انگلیسی باشد.";
-        errEl.classList.remove("hidden");
-        return;
-    }
-
-    const virtualEmail = `${rawUser}@studyapp.local`;
-    btn.disabled = true;
-    btn.textContent = "لطفاً صبر کنید...";
-
-    try {
-        if (authMode === "signup") {
-            const { data, error } = await sb.auth.signUp({
-                email: virtualEmail,
-                password,
-                options: { data: { full_name: fullName, username: rawUser } }
-            });
-            if (error) throw error;
-            if (data.user) {
-                userName = fullName;
-                await onUserAuthenticated(data.user, true);
-            }
-        } else {
-            const { data, error } = await sb.auth.signInWithPassword({
-                email: virtualEmail,
-                password
-            });
-            if (error) throw error;
-            if (data.user) {
-                await onUserAuthenticated(data.user, false);
-            }
-        }
-    } catch (err) {
-        errEl.textContent = err.message.includes("Invalid login")
-            ? "نام کاربری یا رمز عبور اشتباه است."
-            : err.message.includes("already registered")
-            ? "این نام کاربری قبلاً ثبت شده است."
-            : "خطا: " + err.message;
-        errEl.classList.remove("hidden");
-    } finally {
-        btn.disabled = false;
-        btn.textContent = authMode === "login" ? "ورود به داشبورد" : "ساخت حساب و ورود";
-    }
-});
-
-document.getElementById("logout-btn").addEventListener("click", async () => {
-    await sb.auth.signOut();
-    currentUser = null;
-    document.getElementById("main-app").classList.add("hidden");
-    document.getElementById("auth-screen").classList.remove("hidden");
-});
-
-async function onUserAuthenticated(user, isNewUser) {
+async function onUserAuthenticated(user) {
     currentUser = user;
     const uname = user.user_metadata?.username || user.email.split("@")[0];
     document.getElementById("profile-username").textContent = `@${uname}`;
 
-    if (isNewUser) {
-        resetUserState(user.user_metadata?.full_name || uname);
-        await pushToCloud();
-    } else {
-        await loadFromCloud(user);
-    }
+    await loadFromCloud(user);
 
     document.getElementById("auth-screen").classList.add("hidden");
     document.getElementById("main-app").classList.remove("hidden");
@@ -198,7 +195,7 @@ async function loadFromCloud(user) {
 }
 
 async function pushToCloud() {
-    if (!currentUser) return;
+    if (!currentUser || !sb) return;
     setSyncBadge("⏳ در حال ذخیره...");
     const payload = {
         studyLogs, prevWeekMins, notes, monthlyExams, selectedMonth,
@@ -1013,17 +1010,21 @@ document.getElementById("import-json").addEventListener("change", e => {
 
 const savedTheme = localStorage.getItem("studyTheme");
 if (savedTheme === "dark") document.body.classList.add("dark");
-document.getElementById("theme-toggle").addEventListener("click", () => {
+
+function toggleAppTheme() {
     document.body.classList.toggle("dark");
     localStorage.setItem("studyTheme", document.body.classList.contains("dark") ? "dark" : "light");
-});
+}
+document.getElementById("theme-toggle").addEventListener("click", toggleAppTheme);
+document.getElementById("auth-theme-toggle")?.addEventListener("click", toggleAppTheme);
 
 window.scrollToSection = function(id) { document.getElementById(id).scrollIntoView({ behavior: "smooth" }); };
 
 /* --- بررسی خودکار وضعیت ورود هنگام باز کردن صفحه --- */
 (async function checkSession() {
+    if (!sb) return;
     const { data: { session } } = await sb.auth.getSession();
     if (session && session.user) {
-        await onUserAuthenticated(session.user, false);
+        await onUserAuthenticated(session.user);
     }
 })();
