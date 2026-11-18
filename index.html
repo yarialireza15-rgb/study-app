@@ -5,12 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>داشبورد جامع مطالعه و مدرسه</title>
     <link rel="stylesheet" href="style.css">
-    <!-- فونت وزیرمتن + اینتر -->
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- کتابخانه رسمی Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+
+<!-- صفحه ورود و ثبت‌نام کاربران -->
+<div id="auth-screen" class="auth-overlay">
+    <div class="auth-card">
+        <div class="auth-logo">📚</div>
+        <h2>داشبورد هوشمند مطالعه</h2>
+        <p class="auth-subtitle">برنامه‌ریزی درسی، کارنامه تستی و دفترچه یادداشت اختصاصی</p>
+
+        <div class="auth-tabs">
+            <button type="button" id="tab-login" class="auth-tab active">ورود به حساب</button>
+            <button type="button" id="tab-signup" class="auth-tab">ساخت حساب جدید</button>
+        </div>
+
+        <form id="auth-form">
+            <div class="form-group hidden" id="name-field-group">
+                <label>نام و نام خانوادگی:</label>
+                <input type="text" id="auth-fullname" placeholder="مثلاً: علیرضا یاری">
+            </div>
+            <div class="form-group">
+                <label>نام کاربری (انگلیسی):</label>
+                <input type="text" id="auth-username" placeholder="مثلاً: alireza" required autocomplete="username">
+            </div>
+            <div class="form-group">
+                <label>رمز عبور (حداقل ۶ کاراکتر):</label>
+                <input type="password" id="auth-password" placeholder="••••••" required autocomplete="current-password">
+            </div>
+            <p id="auth-error" class="auth-error hidden"></p>
+            <button type="submit" id="auth-submit-btn" class="teal-btn" style="margin-top: 8px;">ورود به داشبورد</button>
+        </form>
+    </div>
+</div>
 
 <!-- محیط تمرکز عمیق + صداهای محیطی -->
 <div id="zen-overlay" class="zen-overlay hidden">
@@ -19,7 +51,6 @@
         <h2 id="zen-subject-title">حسابان2</h2>
         <div id="zen-timer-display" class="zen-clock">25:00</div>
 
-        <!-- کنترل صداهای محیطی -->
         <div class="ambient-controls">
             <span>🎧 صدای محیطی:</span>
             <button type="button" class="sound-btn active" data-sound="none">بی‌صدا</button>
@@ -65,8 +96,7 @@
     </div>
 </div>
 
-<div class="app-layout">
-    <!-- سایدبار سبزآبی باریک -->
+<div class="app-layout hidden" id="main-app">
     <aside class="sidebar">
         <div class="nav-icons">
             <button class="nav-btn active" title="داشبورد" onclick="scrollToSection('top')">⊞</button>
@@ -78,15 +108,14 @@
             <button class="nav-btn" title="گزارش پایان روز" id="sidebar-eod-btn">🌙</button>
             <button class="nav-btn" title="تغییر تم روشن/تیره" id="theme-toggle">🌓</button>
         </div>
-        <button class="nav-btn" title="شروع هفته جدید" id="new-week-btn">⏭️</button>
+        <button class="nav-btn" title="خروج از حساب کاربری" id="logout-btn">🚪</button>
     </aside>
 
-    <!-- بخش اصلی وسط -->
     <main class="main-content" id="top">
         <header class="welcome-header">
             <div>
-                <h1>سلام، <span id="user-name" title="برای تغییر اسم کلیک کن" style="cursor:pointer">علیرضا</span>! 👋</h1>
-                <p class="date-text">داشبورد هوشمند مطالعه، برنامه مدرسه و دفترچه یادداشت</p>
+                <h1>سلام، <span id="user-name" title="برای تغییر اسم کلیک کن" style="cursor:pointer">کاربر</span>! 👋 <span id="sync-status" class="sync-badge">☁️ متصل</span></h1>
+                <p class="date-text">داشبورد هوشمند مطالعه، برنامه مدرسه و دفترچه یادداشت ابری</p>
             </div>
             <div class="header-tools">
                 <button id="open-eod-btn" class="eod-trigger-btn">🌙 گزارش پایان روز</button>
@@ -108,19 +137,11 @@
             </div>
         </header>
 
-        <!-- رادار وضعیت -->
         <div id="weakness-radar" class="radar-banner">
             <strong>📡 رادار هوشمند:</strong>
             <span id="radar-text">در حال بررسی وضعیت دروس...</span>
         </div>
 
-        <div id="backup-banner" class="radar-banner hidden">
-            <strong>💾 یادآوری بکاپ:</strong>
-            <span>بیش از ۷ روز از آخرین بکاپ گذشته؛ داده‌هایت فقط در همین مرورگر ذخیره شده‌اند.</span>
-            <button id="backup-now-btn" class="pill-btn start">بکاپ بگیر</button>
-        </div>
-
-        <!-- ۴ کارت آماری بالای صفحه -->
         <section class="stats-grid">
             <div class="stat-card">
                 <div class="card-top-row">
@@ -159,7 +180,6 @@
             </div>
         </section>
 
-        <!-- ردیف میانی: ثبت مطالعه + نمودار روند هفته -->
         <section class="middle-grid" id="chart-section">
             <div class="white-card" id="log-section">
                 <div class="card-head">
@@ -172,7 +192,7 @@
                             <select id="subject-select" required></select>
                         </div>
                         <div class="form-group">
-                            <label>روز هفته (خودکار از روی تاریخ):</label>
+                            <label>روز هفته:</label>
                             <select id="day-select">
                                 <option value="شنبه">شنبه</option>
                                 <option value="یکشنبه">یکشنبه</option>
@@ -209,7 +229,7 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label>مبحث (اختیاری، برای تحلیل نقاط ضعف):</label>
+                            <label>مبحث (اختیاری):</label>
                             <input type="text" id="topic-input" placeholder="مثلاً: کاربرد مشتق">
                         </div>
                     </div>
@@ -233,7 +253,7 @@
                 <div class="card-head">
                     <h3>نمودار روند مطالعه و تست هفته</h3>
                     <div class="chart-legend-mini">
-                        <span class="dot teal"></span> تشریحی
+                        <span class="dot blue"></span> تشریحی
                         <span class="dot orange"></span> تستی
                     </div>
                 </div>
@@ -243,7 +263,6 @@
             </div>
         </section>
 
-        <!-- هدف‌ها و روند بلندمدت -->
         <section class="white-card" id="goals-section">
             <div class="card-head"><h3>🎯 هدف‌ها و روند بلندمدت</h3></div>
             <div class="goals-layout">
@@ -269,7 +288,6 @@
             <div class="chart-wrapper"><canvas id="longTermChart"></canvas></div>
         </section>
 
-        <!-- بخش جدید: برنامه هفتگی مدرسه -->
         <section class="white-card" id="school-schedule-section">
             <div class="card-head">
                 <h3>🏫 برنامه هفتگی مدرسه</h3>
@@ -307,7 +325,6 @@
             </div>
         </section>
 
-        <!-- بخش جدید: دفترچه یادداشت دیجیتال -->
         <section class="white-card" id="notebook-section">
             <div class="card-head">
                 <h3>📓 دفترچه یادداشت دیجیتال</h3>
@@ -316,15 +333,14 @@
             <div class="notebook-editor">
                 <div class="form-row">
                     <select id="note-subject" style="max-width: 180px;"></select>
-                    <input type="text" id="note-title" placeholder="عنوان یادداشت (مثلاً: خلاصه فصل ۲ حسابان یا فرمول‌های حرکت)">
+                    <input type="text" id="note-title" placeholder="عنوان یادداشت">
                 </div>
-                <textarea id="note-body" rows="3" placeholder="متن کامل یادداشت، نکات مهم کلاس، فرمول‌ها یا تمرین‌های علامت‌دار را اینجا بنویسید..."></textarea>
+                <textarea id="note-body" rows="3" placeholder="متن کامل یادداشت..."></textarea>
                 <button id="add-note" class="teal-btn small">ذخیره در دفترچه</button>
             </div>
             <div id="notes-grid" class="notes-cards-grid"></div>
         </section>
 
-        <!-- دفترچه خطاها -->
         <section class="white-card" id="mistakes-section">
             <div class="card-head">
                 <h3>❌ دفترچه خطاها (غلط‌نامه)</h3>
@@ -336,17 +352,16 @@
             <div class="notebook-editor">
                 <div class="form-row">
                     <select id="mistake-subject" style="max-width: 180px;"></select>
-                    <input type="text" id="mistake-topic" placeholder="مبحث (مثلاً: کاربرد مشتق)">
+                    <input type="text" id="mistake-topic" placeholder="مبحث">
                     <select id="mistake-reason" style="max-width: 220px;"></select>
                 </div>
-                <textarea id="mistake-body" rows="3" placeholder="صورت سؤال، پاسخ درست و دلیل اشتباهت رو بنویس..."></textarea>
+                <textarea id="mistake-body" rows="3" placeholder="صورت سؤال، پاسخ درست و دلیل اشتباه..."></textarea>
                 <button id="add-mistake" class="teal-btn small">ثبت خطا</button>
             </div>
             <div id="mistake-stats" class="mistake-stats"></div>
             <div id="mistakes-grid" class="notes-cards-grid"></div>
         </section>
 
-        <!-- برنامه‌ریز هوشمند هفتگی -->
         <section class="white-card" id="planner-section">
             <div class="card-head">
                 <h3>📅 برنامه‌ریز مطالعه شخصی (بعد از مدرسه)</h3>
@@ -365,13 +380,12 @@
         </section>
     </main>
 
-    <!-- پنل کناری سمت چپ -->
     <aside class="right-panel">
         <div class="profile-mini">
             <div class="avatar" id="user-avatar">ع</div>
             <div>
-                <strong id="profile-name">علیرضا</strong>
-                <span>رشته ریاضی و فیزیک</span>
+                <strong id="profile-name">کاربر</strong>
+                <span id="profile-username">@username</span>
             </div>
         </div>
 
@@ -382,7 +396,6 @@
             <input type="file" id="import-json" accept=".json" hidden>
         </div>
 
-        <!-- تقویم ماهانه امتحانات -->
         <div class="calendar-widget">
             <div class="cal-top-bar">
                 <h4>📅 تقویم امتحانات ماه</h4>
@@ -413,7 +426,6 @@
             <ul id="exams-list" class="exams-list"></ul>
         </div>
 
-        <!-- چک‌لیست کارهای روزانه (برای گزارش پایان روز) -->
         <div class="side-section">
             <h4>✅ کارهای امروز (To-Do)</h4>
             <div class="todo-input-row">
@@ -423,7 +435,6 @@
             <ul id="todo-list" class="todo-list"></ul>
         </div>
 
-        <!-- آخرین مطالعه‌های ثبت‌شده -->
         <div class="side-section">
             <h4>🕒 کارنامه فعالیت‌های اخیر</h4>
             <ul id="history-list" class="event-list"></ul>
