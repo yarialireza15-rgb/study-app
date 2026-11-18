@@ -29,7 +29,7 @@ if (visualStage) {
     });
 }
 
-/* --- ورود اختصاصی اعضا (بدون ثبت‌نام عمومی) --- */
+/* --- ورود اختصاصی اعضا --- */
 document.getElementById("auth-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const errEl = document.getElementById("auth-error");
@@ -488,29 +488,42 @@ document.getElementById("open-eod-btn").addEventListener("click", openEndOfDayRe
 document.getElementById("sidebar-eod-btn").addEventListener("click", openEndOfDayReport);
 document.getElementById("close-eod-btn").addEventListener("click", () => document.getElementById("eod-modal").classList.add("hidden"));
 
-/* --- صداهای محیطی --- */
-let audioCtx = null, noiseSource = null;
-function stopAmbientSound() { if (noiseSource) { try { noiseSource.stop(); } catch {} noiseSource = null; } }
+/* --- صداهای محیطی واقعی و باکیفیت --- */
+const AMBIENT_TRACKS = {
+    rain: "https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg",
+    nature: "https://actions.google.com/sounds/v1/ambiences/forest_morning.ogg",
+    cafe: "https://actions.google.com/sounds/v1/ambiences/coffee_shop.ogg"
+};
+
+let currentAudio = null;
+
+function stopAmbientSound() {
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        currentAudio = null;
+    }
+}
+
 function playAmbientSound(type) {
     stopAmbientSound();
-    if (type === "none") return;
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const bufferSize = 2 * audioCtx.sampleRate;
-    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-    const output = noiseBuffer.getChannelData(0);
-    let lastOut = 0.0;
-    for (let i = 0; i < bufferSize; i++) {
-        const white = Math.random() * 2 - 1;
-        if (type === "white") output[i] = white * 0.04;
-        else if (type === "rain") { output[i] = (lastOut + (0.04 * white)) / 1.04; lastOut = output[i]; output[i] *= 0.25; }
-        else { output[i] = (lastOut + (0.015 * white)) / 1.015; lastOut = output[i]; output[i] *= 0.35; }
-    }
-    noiseSource = audioCtx.createBufferSource();
-    noiseSource.buffer = noiseBuffer;
-    noiseSource.loop = true;
-    noiseSource.connect(audioCtx.destination);
-    noiseSource.start(0);
+    if (type === "none" || !AMBIENT_TRACKS[type]) return;
+
+    currentAudio = new Audio(AMBIENT_TRACKS[type]);
+    currentAudio.loop = true;
+    const volSlider = document.getElementById("ambient-volume");
+    currentAudio.volume = volSlider ? Number(volSlider.value) : 0.65;
+    currentAudio.play().catch(err => {
+        console.warn("خطا در پخش صدا:", err);
+        alert("مرورگر اجازه پخش خودکار صدا را نداد؛ لطفاً دوباره روی دکمه صدا کلیک کنید.");
+    });
 }
+
+document.getElementById("ambient-volume")?.addEventListener("input", (e) => {
+    if (currentAudio) {
+        currentAudio.volume = Number(e.target.value);
+    }
+});
 
 document.querySelectorAll(".sound-btn").forEach(btn => {
     btn.addEventListener("click", () => {
