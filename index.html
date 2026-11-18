@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>داشبورد جامع مطالعه و مدرسه</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- فونت وزیرمتن + اینتر -->
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<!-- محیط تمرکز عمیق + صداهای محیطی -->
+<div id="zen-overlay" class="zen-overlay hidden">
+    <div class="zen-box">
+        <span class="zen-tag">محیط تمرکز عمیق</span>
+        <h2 id="zen-subject-title">حسابان2</h2>
+        <div id="zen-timer-display" class="zen-clock">25:00</div>
+
+        <!-- کنترل صداهای محیطی -->
+        <div class="ambient-controls">
+            <span>🎧 صدای محیطی:</span>
+            <button type="button" class="sound-btn active" data-sound="none">بی‌صدا</button>
+            <button type="button" class="sound-btn" data-sound="rain">🌧️ باران ملایم</button>
+            <button type="button" class="sound-btn" data-sound="nature">🍃 نسیم و طبیعت</button>
+            <button type="button" class="sound-btn" data-sound="white">📻 نویز سفید</button>
+        </div>
+
+        <div class="zen-actions">
+            <button id="zen-pause-btn" class="pill-btn">توقف / ادامه</button>
+            <button id="exit-zen-btn" class="pill-btn start">خروج از محیط تمرکز</button>
+        </div>
+    </div>
+</div>
+
+<!-- پنجره گزارش پایان روز -->
+<div id="eod-modal" class="modal-backdrop hidden">
+    <div class="modal-card">
+        <div class="modal-head">
+            <h3>🌙 گزارش جامع پایان روز</h3>
+            <button id="close-eod-btn" class="del-x">✕</button>
+        </div>
+        <div class="eod-grid">
+            <div class="eod-box">
+                <h4>⏱️ زمان مطالعه امروز</h4>
+                <p id="eod-study-time" class="eod-big-num">0 دقیقه</p>
+                <small id="eod-test-summary">۰ تست حل شده</small>
+            </div>
+            <div class="eod-box">
+                <h4>⚠️ درس‌های ضعیف‌تر (نیازمند مرور)</h4>
+                <p id="eod-weak-subjects">همه دروس در وضعیت مطلوب هستند.</p>
+            </div>
+            <div class="eod-box full">
+                <h4>✅ کارهای انجام‌شده امروز</h4>
+                <ul id="eod-completed-tasks" class="eod-list"></ul>
+            </div>
+            <div class="eod-box full highlight">
+                <h4>📅 برنامه فردا (کلاس‌های مدرسه + پیشنهاد مطالعه)</h4>
+                <p id="eod-tomorrow-plan"></p>
+            </div>
+        </div>
+        <button onclick="window.print()" class="teal-btn" style="margin-top: 14px;">🖨️ چاپ / ذخیره PDF گزارش روز</button>
+    </div>
+</div>
+
+<div class="app-layout">
+    <!-- سایدبار سبزآبی باریک -->
+    <aside class="sidebar">
+        <div class="nav-icons">
+            <button class="nav-btn active" title="داشبورد" onclick="scrollToSection('top')">⊞</button>
+            <button class="nav-btn" title="ثبت مطالعه و تست" onclick="scrollToSection('log-section')">📝</button>
+            <button class="nav-btn" title="هدف‌ها و روند" onclick="scrollToSection('goals-section')">🎯</button>
+            <button class="nav-btn" title="برنامه هفتگی مدرسه" onclick="scrollToSection('school-schedule-section')">🏫</button>
+            <button class="nav-btn" title="دفترچه یادداشت دیجیتال" onclick="scrollToSection('notebook-section')">📓</button>
+            <button class="nav-btn" title="دفترچه خطاها" onclick="scrollToSection('mistakes-section')">❌</button>
+            <button class="nav-btn" title="گزارش پایان روز" id="sidebar-eod-btn">🌙</button>
+            <button class="nav-btn" title="تغییر تم روشن/تیره" id="theme-toggle">🌓</button>
+        </div>
+        <button class="nav-btn" title="شروع هفته جدید" id="new-week-btn">⏭️</button>
+    </aside>
+
+    <!-- بخش اصلی وسط -->
+    <main class="main-content" id="top">
+        <header class="welcome-header">
+            <div>
+                <h1>سلام، <span id="user-name" title="برای تغییر اسم کلیک کن" style="cursor:pointer">علیرضا</span>! 👋</h1>
+                <p class="date-text">داشبورد هوشمند مطالعه، برنامه مدرسه و دفترچه یادداشت</p>
+            </div>
+            <div class="header-tools">
+                <button id="open-eod-btn" class="eod-trigger-btn">🌙 گزارش پایان روز</button>
+                <div class="quick-timer-pill">
+                    <span>⏱️</span>
+                    <select id="timer-subject"></select>
+                    <select id="timer-length" title="مدت تمرکز">
+                        <option value="15">۱۵ دقیقه</option>
+                        <option value="25">۲۵ دقیقه</option>
+                        <option value="45">۴۵ دقیقه</option>
+                        <option value="60">۶۰ دقیقه</option>
+                    </select>
+                    <strong id="timer-display">25:00</strong>
+                    <button id="start-timer" class="pill-btn start">شروع</button>
+                    <button id="pause-timer" class="pill-btn">توقف</button>
+                    <button id="finish-early-btn" class="pill-btn" title="ثبت مطالعه تا همین لحظه">ثبت زودتر</button>
+                    <button id="enter-zen-btn" class="pill-btn" title="محیط تمرکز و صدای باران">🎧 محیط تمرکز</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- رادار وضعیت -->
+        <div id="weakness-radar" class="radar-banner">
+            <strong>📡 رادار هوشمند:</strong>
+            <span id="radar-text">در حال بررسی وضعیت دروس...</span>
+        </div>
+
+        <div id="backup-banner" class="radar-banner hidden">
+            <strong>💾 یادآوری بکاپ:</strong>
+            <span>بیش از ۷ روز از آخرین بکاپ گذشته؛ داده‌هایت فقط در همین مرورگر ذخیره شده‌اند.</span>
+            <button id="backup-now-btn" class="pill-btn start">بکاپ بگیر</button>
+        </div>
+
+        <!-- ۴ کارت آماری بالای صفحه -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="card-top-row">
+                    <div class="stat-icon">📚</div>
+                    <span id="trend-hours" class="trend-badge neutral">هفته جاری</span>
+                </div>
+                <div class="stat-value" id="stat-hours">0.0 ساعت</div>
+                <div class="stat-label">مجموع مطالعه هفته</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="card-top-row">
+                    <div class="stat-icon">✍️</div>
+                    <span id="trend-tests" class="trend-badge neutral">0 تست</span>
+                </div>
+                <div class="stat-value" id="stat-accuracy">0%</div>
+                <div class="stat-label">درصد خالص تست‌ها (با نمره منفی)</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="card-top-row">
+                    <div class="stat-icon">⚖️</div>
+                    <span id="balance-badge" class="trend-badge neutral">متعادل</span>
+                </div>
+                <div class="stat-value" id="stat-balance">0% / 0%</div>
+                <div class="stat-label">نسبت تشریحی به تستی</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="card-top-row">
+                    <div class="stat-icon">⚡</div>
+                    <span class="trend-badge neutral">سرعت تست</span>
+                </div>
+                <div class="stat-value" id="stat-speed">0 دقیقه</div>
+                <div class="stat-label">میانگین زمان هر تست</div>
+            </div>
+        </section>
+
+        <!-- ردیف میانی: ثبت مطالعه + نمودار روند هفته -->
+        <section class="middle-grid" id="chart-section">
+            <div class="white-card" id="log-section">
+                <div class="card-head">
+                    <h3>ثبت مطالعه و تست</h3>
+                </div>
+                <form id="study-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>درس:</label>
+                            <select id="subject-select" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label>روز هفته (خودکار از روی تاریخ):</label>
+                            <select id="day-select">
+                                <option value="شنبه">شنبه</option>
+                                <option value="یکشنبه">یکشنبه</option>
+                                <option value="دوشنبه">دوشنبه</option>
+                                <option value="سه‌شنبه">سه‌شنبه</option>
+                                <option value="چهارشنبه">چهارشنبه</option>
+                                <option value="پنج‌شنبه">پنج‌شنبه</option>
+                                <option value="جمعه">جمعه</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="study-date">تاریخ مطالعه:</label>
+                            <input type="date" id="study-date" required>
+                            <small id="study-date-fa" class="date-fa"></small>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>نوع مطالعه:</label>
+                            <select id="study-type">
+                                <option value="descriptive">📖 مطالعه تشریحی / درسنامه</option>
+                                <option value="test">🎯 تست‌زنی و حل تمرین</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>مدت (دقیقه):</label>
+                            <input type="number" id="minutes-input" min="5" max="720" placeholder="مثلاً 60" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>مبحث (اختیاری، برای تحلیل نقاط ضعف):</label>
+                            <input type="text" id="topic-input" placeholder="مثلاً: کاربرد مشتق">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>تعداد کل تست:</label>
+                            <input type="number" id="total-tests" min="0" max="500" placeholder="مثلاً 30">
+                        </div>
+                        <div class="form-group">
+                            <label>تعداد تست درست:</label>
+                            <input type="number" id="correct-tests" min="0" max="500" placeholder="مثلاً 22">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="teal-btn">ثبت در کارنامه</button>
+                </form>
+            </div>
+
+            <div class="white-card">
+                <div class="card-head">
+                    <h3>نمودار روند مطالعه و تست هفته</h3>
+                    <div class="chart-legend-mini">
+                        <span class="dot teal"></span> تشریحی
+                        <span class="dot orange"></span> تستی
+                    </div>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="weeklyWaveChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- هدف‌ها و روند بلندمدت -->
+        <section class="white-card" id="goals-section">
+            <div class="card-head"><h3>🎯 هدف‌ها و روند بلندمدت</h3></div>
+            <div class="goals-layout">
+                <div class="goal-box">
+                    <h4>⏳ شمارش معکوس</h4>
+                    <div class="form-row">
+                        <input type="text" id="target-title" placeholder="عنوان (مثلاً کنکور)">
+                        <input type="date" id="target-date">
+                    </div>
+                    <p id="countdown-text" class="countdown-text"></p>
+                </div>
+                <div class="goal-box">
+                    <h4>📌 هدف مطالعه‌ی هفتگی هر درس</h4>
+                    <div class="form-row">
+                        <select id="goal-subject"></select>
+                        <input type="number" id="goal-hours" min="0.5" max="40" step="0.5" placeholder="ساعت در هفته">
+                        <button id="add-goal-btn" class="teal-btn small" type="button">افزودن</button>
+                    </div>
+                    <div id="goals-grid"></div>
+                </div>
+            </div>
+            <h4 style="margin-top:16px">📈 مطالعه‌ی ۸ هفته‌ی اخیر (ساعت)</h4>
+            <div class="chart-wrapper"><canvas id="longTermChart"></canvas></div>
+        </section>
+
+        <!-- بخش جدید: برنامه هفتگی مدرسه -->
+        <section class="white-card" id="school-schedule-section">
+            <div class="card-head">
+                <h3>🏫 برنامه هفتگی مدرسه</h3>
+                <div class="school-form-inline">
+                    <select id="school-day-select">
+                        <option value="شنبه">شنبه</option>
+                        <option value="یکشنبه">یکشنبه</option>
+                        <option value="دوشنبه">دوشنبه</option>
+                        <option value="سه‌شنبه">سه‌شنبه</option>
+                        <option value="چهارشنبه">چهارشنبه</option>
+                    </select>
+                    <select id="school-period-select">
+                        <option value="0">زنگ اول</option>
+                        <option value="1">زنگ دوم</option>
+                        <option value="2">زنگ سوم</option>
+                        <option value="3">زنگ چهارم</option>
+                    </select>
+                    <select id="school-subject-select"></select>
+                    <button id="save-school-slot" class="teal-btn small">ثبت در برنامه</button>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="school-table">
+                    <thead>
+                        <tr>
+                            <th>روز هفته</th>
+                            <th>زنگ اول</th>
+                            <th>زنگ دوم</th>
+                            <th>زنگ سوم</th>
+                            <th>زنگ چهارم</th>
+                        </tr>
+                    </thead>
+                    <tbody id="school-table-body"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- بخش جدید: دفترچه یادداشت دیجیتال -->
+        <section class="white-card" id="notebook-section">
+            <div class="card-head">
+                <h3>📓 دفترچه یادداشت دیجیتال</h3>
+                <input type="text" id="note-search" class="search-input" placeholder="🔍 جستجو در یادداشت‌ها...">
+            </div>
+            <div class="notebook-editor">
+                <div class="form-row">
+                    <select id="note-subject" style="max-width: 180px;"></select>
+                    <input type="text" id="note-title" placeholder="عنوان یادداشت (مثلاً: خلاصه فصل ۲ حسابان یا فرمول‌های حرکت)">
+                </div>
+                <textarea id="note-body" rows="3" placeholder="متن کامل یادداشت، نکات مهم کلاس، فرمول‌ها یا تمرین‌های علامت‌دار را اینجا بنویسید..."></textarea>
+                <button id="add-note" class="teal-btn small">ذخیره در دفترچه</button>
+            </div>
+            <div id="notes-grid" class="notes-cards-grid"></div>
+        </section>
+
+        <!-- دفترچه خطاها -->
+        <section class="white-card" id="mistakes-section">
+            <div class="card-head">
+                <h3>❌ دفترچه خطاها (غلط‌نامه)</h3>
+                <select id="mistake-filter" class="search-input">
+                    <option value="all">همه خطاها</option>
+                    <option value="due">🔔 فقط مرور امروز</option>
+                </select>
+            </div>
+            <div class="notebook-editor">
+                <div class="form-row">
+                    <select id="mistake-subject" style="max-width: 180px;"></select>
+                    <input type="text" id="mistake-topic" placeholder="مبحث (مثلاً: کاربرد مشتق)">
+                    <select id="mistake-reason" style="max-width: 220px;"></select>
+                </div>
+                <textarea id="mistake-body" rows="3" placeholder="صورت سؤال، پاسخ درست و دلیل اشتباهت رو بنویس..."></textarea>
+                <button id="add-mistake" class="teal-btn small">ثبت خطا</button>
+            </div>
+            <div id="mistake-stats" class="mistake-stats"></div>
+            <div id="mistakes-grid" class="notes-cards-grid"></div>
+        </section>
+
+        <!-- برنامه‌ریز هوشمند هفتگی -->
+        <section class="white-card" id="planner-section">
+            <div class="card-head">
+                <h3>📅 برنامه‌ریز مطالعه شخصی (بعد از مدرسه)</h3>
+                <div class="planner-inline-controls">
+                    <input type="number" id="daily-goal" value="4" min="1" max="14" title="ساعت مطالعه روزانه">
+                    <select id="focus-mode">
+                        <option value="smart-weak">🎯 هوشمند (اولویت امتحانات و دروس ضعیف)</option>
+                        <option value="balanced">⚖️ متعادل (همه دروس)</option>
+                        <option value="heavy-math">📐 تمرکز حسابان، گسسته، هندسه</option>
+                        <option value="heavy-science">🧪 تمرکز فیزیک و شیمی</option>
+                    </select>
+                    <button id="generate-plan" class="teal-btn small">تولید برنامه</button>
+                </div>
+            </div>
+            <div id="plan-output" class="lessons-list"></div>
+        </section>
+    </main>
+
+    <!-- پنل کناری سمت چپ -->
+    <aside class="right-panel">
+        <div class="profile-mini">
+            <div class="avatar" id="user-avatar">ع</div>
+            <div>
+                <strong id="profile-name">علیرضا</strong>
+                <span>رشته ریاضی و فیزیک</span>
+            </div>
+        </div>
+
+        <div class="backup-box">
+            <button onclick="window.print()" class="action-chip primary">📄 PDF</button>
+            <button id="export-json" class="action-chip">💾 بکاپ</button>
+            <label for="import-json" class="action-chip">📂 بازیابی</label>
+            <input type="file" id="import-json" accept=".json" hidden>
+        </div>
+
+        <!-- تقویم ماهانه امتحانات -->
+        <div class="calendar-widget">
+            <div class="cal-top-bar">
+                <h4>📅 تقویم امتحانات ماه</h4>
+                <select id="month-select" class="mini-month-select">
+                    <option value="فروردین">فروردین</option>
+                    <option value="اردیبهشت">اردیبهشت</option>
+                    <option value="خرداد">خرداد</option>
+                    <option value="تیر">تیر</option>
+                    <option value="مرداد">مرداد</option>
+                    <option value="شهریور">شهریور</option>
+                    <option value="مهر">مهر</option>
+                    <option value="آبان" selected>آبان</option>
+                    <option value="آذر">آذر</option>
+                    <option value="دی">دی</option>
+                    <option value="بهمن">بهمن</option>
+                    <option value="اسفند">اسفند</option>
+                </select>
+            </div>
+            <div class="exam-add-row">
+                <input type="number" id="exam-day-input" min="1" max="31" placeholder="روز (۱-۳۱)">
+                <select id="exam-subject-select"></select>
+                <button id="add-exam-btn" class="add-exam-btn">+</button>
+            </div>
+            <div class="month-weekdays">
+                <span>ش</span><span>ی</span><span>د</span><span>س</span><span>چ</span><span>پ</span><span>ج</span>
+            </div>
+            <div class="month-grid" id="month-calendar-grid"></div>
+            <ul id="exams-list" class="exams-list"></ul>
+        </div>
+
+        <!-- چک‌لیست کارهای روزانه (برای گزارش پایان روز) -->
+        <div class="side-section">
+            <h4>✅ کارهای امروز (To-Do)</h4>
+            <div class="todo-input-row">
+                <input type="text" id="todo-input" placeholder="مثلاً: حل تمرین شیمی...">
+                <button id="add-todo-btn" class="add-note-btn">+</button>
+            </div>
+            <ul id="todo-list" class="todo-list"></ul>
+        </div>
+
+        <!-- آخرین مطالعه‌های ثبت‌شده -->
+        <div class="side-section">
+            <h4>🕒 کارنامه فعالیت‌های اخیر</h4>
+            <ul id="history-list" class="event-list"></ul>
+        </div>
+    </aside>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
