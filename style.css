@@ -47,7 +47,7 @@ body {
 }
 
 /* ==========================================
-   صفحه ورود دو ستونه + المان‌های سه‌بعدی تعاملی
+   صفحه ورود دو ستونه با رندرهای سه‌بعدی واقعی
 ========================================== */
 .auth-overlay {
     min-height: 100vh;
@@ -229,111 +229,102 @@ body.dark .auth-overlay {
     color: var(--text-muted);
 }
 
-/* ستون سمت چپ با گرادیانت ملایم و اشکال سه‌بعدی */
+/* ستون سمت چپ با گرادیانت آبی، طرح هزارتو و رندرهای سه‌بعدی */
 .auth-visual-side {
     position: relative;
     border-radius: 22px;
     overflow: hidden;
-    background: linear-gradient(145deg, #dbeafe 0%, #e0e7ff 45%, #fef3c7 100%);
+    background: linear-gradient(160deg, #60a5fa 0%, #2563eb 52%, #1d4ed8 100%);
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    padding: 28px;
+    padding: 36px 32px;
+    color: #ffffff;
 }
 
-body.dark .auth-visual-side {
-    background: linear-gradient(145deg, #1e3a8a 0%, #1e1b4b 55%, #0f172a 100%);
-}
-
-.glow-orb {
+.maze-pattern-bg {
     position: absolute;
-    border-radius: 50%;
-    filter: blur(45px);
+    inset: 0;
+    opacity: 0.14;
+    background-image:
+        linear-gradient(to right, #ffffff 2px, transparent 2px),
+        linear-gradient(to bottom, #ffffff 2px, transparent 2px),
+        radial-gradient(circle at 20% 25%, rgba(255,255,255,0.45) 0%, transparent 55%);
+    background-size: 46px 46px, 46px 46px, 100% 100%;
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.15) 72%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.15) 72%, transparent 100%);
     pointer-events: none;
 }
 
-.orb-1 {
-    width: 260px;
-    height: 260px;
-    background: rgba(59, 130, 246, 0.45);
-    top: 12%;
-    left: 18%;
-}
-
-.orb-2 {
-    width: 220px;
-    height: 220px;
-    background: rgba(168, 85, 247, 0.35);
-    bottom: 22%;
-    right: 14%;
-}
-
-/* کارت‌های سه‌بعدی شناور 🎓 📐 🏫 🎒 */
-.floating-3d-card {
+.soft-blur-cloud {
     position: absolute;
-    background: rgba(255, 255, 255, 0.65);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border: 1px solid rgba(255, 255, 255, 0.85);
-    border-radius: 24px;
-    padding: 16px 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12), inset 0 2px 4px rgba(255, 255, 255, 0.9);
-    transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    width: 300px;
+    height: 300px;
+    top: -40px;
+    left: -30px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.38) 0%, transparent 70%);
+    filter: blur(28px);
+    pointer-events: none;
+}
+
+/* رندرهای سه‌بعدی آزاد و بدون کادر */
+.floating-3d-render {
+    position: absolute;
+    object-fit: contain;
+    filter: drop-shadow(0 22px 24px rgba(15, 23, 42, 0.35));
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
     user-select: none;
+    pointer-events: none;
 }
 
-body.dark .floating-3d-card {
-    background: rgba(30, 41, 59, 0.68);
-    border-color: rgba(255, 255, 255, 0.16);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+.item-grad {
+    width: 132px;
+    height: 132px;
+    top: 34%;
+    right: 10%;
+    transform: rotate(-12deg);
 }
 
-.emoji-3d {
-    font-size: 3.1rem;
-    line-height: 1;
-    filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.18));
-    transform: perspective(400px) rotateX(8deg) rotateY(-8deg);
+.item-ruler {
+    width: 96px;
+    height: 96px;
+    top: 14%;
+    left: 16%;
+    transform: rotate(15deg);
 }
 
-.floating-3d-card small {
-    font-size: 0.74rem;
-    font-weight: 700;
-    color: var(--text-main);
+.item-school {
+    width: 104px;
+    height: 104px;
+    top: 13%;
+    right: 16%;
 }
 
-.item-grad { top: 13%; right: 14%; }
-.item-ruler { top: 18%; left: 14%; }
-.item-school { top: 43%; right: 26%; }
-.item-bag { top: 46%; left: 22%; }
+.item-bag {
+    width: 94px;
+    height: 94px;
+    top: 38%;
+    left: 14%;
+    transform: rotate(-8deg);
+}
 
-.visual-caption-glass {
+.visual-hero-copy {
     position: relative;
-    z-index: 2;
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(14px);
-    border: 1px solid rgba(255, 255, 255, 0.75);
-    border-radius: 18px;
-    padding: 18px 20px;
+    z-index: 3;
+    text-align: right;
 }
 
-body.dark .visual-caption-glass {
-    background: rgba(15, 23, 42, 0.65);
-    border-color: rgba(255, 255, 255, 0.12);
-}
-
-.visual-caption-glass h3 {
-    font-size: 1rem;
+.visual-hero-copy h2 {
+    font-size: 1.75rem;
     font-weight: 800;
-    margin-bottom: 6px;
+    line-height: 1.45;
+    margin-bottom: 10px;
+    text-shadow: 0 4px 16px rgba(15, 23, 42, 0.22);
 }
 
-.visual-caption-glass p {
-    font-size: 0.8rem;
-    color: var(--text-muted);
+.visual-hero-copy p {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.9);
     line-height: 1.7;
 }
 
@@ -343,26 +334,16 @@ body.dark .visual-caption-glass {
         min-height: auto;
     }
     .auth-visual-side {
-        min-height: 320px;
+        min-height: 360px;
     }
-    .emoji-3d {
-        font-size: 2.3rem;
-    }
+    .item-grad { width: 96px; height: 96px; }
+    .item-ruler, .item-school, .item-bag { width: 72px; height: 72px; }
 }
 
 /* ==========================================
    استایل‌های داشبورد اصلی
 ========================================== */
-.sync-badge {
-    font-size: 0.72rem;
-    background: var(--accent-light);
-    color: var(--accent);
-    padding: 3px 10px;
-    border-radius: 12px;
-    font-weight: 600;
-    vertical-align: middle;
-}
-
+.sync-badge { font-size: 0.72rem; background: var(--accent-light); color: var(--accent); padding: 3px 10px; border-radius: 12px; font-weight: 600; vertical-align: middle; }
 .zen-overlay { position: fixed; inset: 0; background: radial-gradient(circle at center, #1e293b 0%, #090d16 100%); color: #ffffff; z-index: 9999; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; }
 .zen-box { max-width: 540px; width: 100%; }
 .zen-tag { background: rgba(255, 255, 255, 0.12); padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; }

@@ -6,7 +6,7 @@ const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE
 let currentUser = null;
 let syncTimeout = null;
 
-/* --- انیمیشن تعاملی اشکال سه‌بعدی با حرکت موس --- */
+/* --- انیمیشن تعاملی رندرهای سه‌بعدی با حرکت موس --- */
 const visualStage = document.getElementById("auth-visual-stage");
 if (visualStage) {
     visualStage.addEventListener("mousemove", (e) => {
@@ -14,19 +14,17 @@ if (visualStage) {
         const normX = ((e.clientX - rect.left) / rect.width) - 0.5;
         const normY = ((e.clientY - rect.top) / rect.height) - 0.5;
 
-        visualStage.querySelectorAll(".floating-3d-card").forEach(card => {
-            const depth = Number(card.dataset.depth) || 20;
+        visualStage.querySelectorAll(".floating-3d-render").forEach(img => {
+            const depth = Number(img.dataset.depth) || 20;
             const moveX = normX * depth;
             const moveY = normY * depth;
-            const rotY = normX * 14;
-            const rotX = -normY * 14;
-            card.style.transform = `translate3d(${moveX}px, ${moveY}px, 0) perspective(500px) rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+            img.style.transform = `translate3d(${moveX}px, ${moveY}px, 0) scale(1.04)`;
         });
     });
 
     visualStage.addEventListener("mouseleave", () => {
-        visualStage.querySelectorAll(".floating-3d-card").forEach(card => {
-            card.style.transform = "translate3d(0, 0, 0)";
+        visualStage.querySelectorAll(".floating-3d-render").forEach(img => {
+            img.style.transform = "translate3d(0, 0, 0) scale(1)";
         });
     });
 }
