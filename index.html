@@ -3,17 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="داشبورد هوشمند مطالعه، برنامه هفتگی مدرسه، کارنامه تستی و دفترچه یادداشت ابری برای دانش‌آموزان ریاضی و فیزیک">
     <title>داشبورد جامع مطالعه و مدرسه</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <script>try{if(localStorage.getItem("studyTheme")==="dark")document.documentElement.classList.add("dark")}catch(e){}</script>
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#2b3a67">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <link rel="stylesheet" href="style.css">
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.js"></script>
 </head>
 <body>
+<noscript><p style="padding:20px">برای استفاده از این برنامه باید جاوااسکریپت فعال باشد.</p></noscript>
 
 <!-- صفحه ورود دو ستونه با رندرهای سه‌بعدی واقعی -->
-<div id="auth-screen" class="auth-overlay">
+<div id="auth-screen" class="auth-overlay hidden">
     <div class="auth-split-container">
         <div class="auth-form-side">
             <div class="auth-top-bar">
@@ -21,12 +28,12 @@
                     <span class="brand-dot"></span>
                     <span>پنل اختصاصی اعضا</span>
                 </div>
-                <button type="button" id="auth-theme-toggle" class="icon-circle-btn" title="تغییر تم روشن / تیره">🌓</button>
+                <button type="button" id="auth-theme-toggle" class="icon-circle-btn" title="تغییر تم روشن / تیره" aria-label="تغییر تم روشن / تیره"><svg class="bico" viewBox="0 0 24 24" aria-hidden="true" style="width:18px;height:18px;margin:0"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 010 18z" fill="currentColor"/></svg></button>
             </div>
 
             <div class="auth-form-center">
                 <div class="user-avatar-ring">
-                    <span>👤</span>
+                    <span><svg class="bico" viewBox="0 0 24 24" aria-hidden="true" style="width:34px;height:34px;margin:0;color:#93b4ff"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span>
                 </div>
                 <h2>ورود به حساب کاربری</h2>
                 <p class="auth-subtitle">نام کاربری و رمز عبور اختصاصی خود را وارد کنید</p>
@@ -35,20 +42,20 @@
                     <div class="form-group">
                         <label for="auth-username">نام کاربری (انگلیسی):</label>
                         <div class="input-with-icon">
-                            <span class="field-icon">👤</span>
-                            <input type="text" id="auth-username" placeholder="مثلاً: alireza" required autocomplete="username">
+                            <span class="field-icon"><svg class="bico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span>
+                            <input type="text" id="auth-username" aria-label="مثلاً: alireza" placeholder="مثلاً: alireza" required autocomplete="username">
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label for="auth-password">رمز عبور:</label>
                         <div class="input-with-icon">
-                            <span class="field-icon">🔒</span>
-                            <input type="password" id="auth-password" placeholder="••••••••" required autocomplete="current-password">
+                            <span class="field-icon"><svg class="bico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></span>
+                            <input type="password" id="auth-password" aria-label="••••••••" placeholder="••••••••" required autocomplete="current-password">
                         </div>
                     </div>
 
-                    <p id="auth-error" class="auth-error hidden"></p>
+                    <p id="auth-error" class="auth-error hidden" role="alert"></p>
                     <button type="submit" id="auth-submit-btn" class="royal-login-btn">ورود به داشبورد</button>
                 </form>
             </div>
@@ -64,17 +71,19 @@
             <div class="maze-pattern-bg"></div>
             <div class="soft-blur-cloud"></div>
 
-            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Graduation%20Cap.png"
-                 alt="کلاه فارغ‌التحصیلی" class="floating-3d-render item-grad" data-depth="32">
+            <svg class="glass-defs" width="0" height="0" aria-hidden="true" focusable="false"><defs>
+                <linearGradient id="glassFill" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".88"/><stop offset=".55" stop-color="#e4e9ff" stop-opacity=".45"/><stop offset="1" stop-color="#8c9ddc" stop-opacity=".35"/></linearGradient>
+                <linearGradient id="glassSide" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c9d2f5" stop-opacity=".65"/><stop offset="1" stop-color="#3a4f94" stop-opacity=".55"/></linearGradient>
+                <linearGradient id="blueAcc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc247"/><stop offset="1" stop-color="#f5a623"/></linearGradient>
+            </defs></svg>
 
-            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Triangular%20Ruler.png"
-                 alt="گونیا و ریاضی" class="floating-3d-render item-ruler" data-depth="-24">
+            <span class="glass-orb" aria-hidden="true"></span>
 
-            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/School.png"
-                 alt="مدرسه" class="floating-3d-render item-school" data-depth="20">
+            <div class="glass-obj go-pencil" aria-hidden="true"><svg viewBox="0 0 220 90"><rect x="10" y="22" width="150" height="46" rx="12" fill="url(#glassFill)" stroke="rgba(255,255,255,.8)" stroke-width="2"/><path d="M160 22l50 23-50 23z" fill="url(#glassSide)" stroke="rgba(255,255,255,.7)"/><rect x="10" y="22" width="34" height="46" rx="12" fill="url(#blueAcc)" opacity=".75"/><path d="M60 32h86" stroke="#fff" stroke-opacity=".85" stroke-width="4" stroke-linecap="round"/></svg></div>
 
-            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Backpack.png"
-                 alt="کوله‌پشتی مطالعه" class="floating-3d-render item-bag" data-depth="-28">
+            <div class="glass-obj go-book" aria-hidden="true"><svg viewBox="0 0 200 170"><rect x="40" y="14" width="124" height="142" rx="16" fill="url(#glassFill)" stroke="rgba(255,255,255,.8)" stroke-width="2"/><rect x="40" y="14" width="24" height="142" rx="12" fill="url(#blueAcc)" opacity=".6"/><path d="M70 26h84v118H70z" fill="rgba(255,255,255,.32)"/><path d="M84 56h56M84 78h56M84 100h34" stroke="#fff" stroke-opacity=".9" stroke-width="6" stroke-linecap="round"/><path d="M50 24C80 10 130 10 156 22" stroke="#fff" stroke-opacity=".8" stroke-width="3" stroke-linecap="round" fill="none"/></svg></div>
+
+            <div class="glass-obj go-cap" aria-hidden="true"><svg viewBox="0 0 240 190"><path d="M60 86v40c0 30 120 30 120 0V86l-60 28z" fill="url(#glassSide)" stroke="rgba(255,255,255,.55)" stroke-width="1.5"/><path d="M60 114c0 30 120 30 120 0v14c0 30-120 30-120 0z" fill="url(#blueAcc)" opacity=".7"/><path d="M10 62l110 50v16L10 78z" fill="url(#glassSide)" stroke="rgba(255,255,255,.5)"/><path d="M230 62l-110 50v16l110-50z" fill="url(#glassSide)" stroke="rgba(255,255,255,.5)"/><path d="M120 12l110 50-110 50L10 62z" fill="url(#glassFill)" stroke="rgba(255,255,255,.85)" stroke-width="2" stroke-linejoin="round"/><path d="M24 60L120 18" stroke="#fff" stroke-opacity=".9" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M120 62l86 18v50" stroke="#e08e0b" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="120" cy="62" r="6" fill="url(#blueAcc)"/><path d="M197 128h18l5 36h-28z" fill="url(#blueAcc)"/><path d="M200 134v26M206 134v28M212 134v26" stroke="#fff" stroke-opacity=".5" stroke-width="1.5"/></svg></div>
 
             <div class="visual-hero-copy">
                 <h2>تو برای موفقیت تلاش کن،<br>مسیر با ما...</h2>
@@ -86,7 +95,7 @@
 
 <!-- محیط تمرکز عمیق + صداهای محیطی واقعی -->
 <div id="zen-overlay" class="zen-overlay hidden">
-    <div class="zen-box">
+    <div class="zen-box" role="dialog" aria-modal="true" aria-label="محیط تمرکز عمیق">
         <span class="zen-tag">محیط تمرکز عمیق</span>
         <h2 id="zen-subject-title">حسابان2</h2>
         <div id="zen-timer-display" class="zen-clock">25:00</div>
@@ -112,84 +121,91 @@
 
 <!-- پنجره گزارش پایان روز -->
 <div id="eod-modal" class="modal-backdrop hidden">
-    <div class="modal-card">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="گزارش پایان روز">
         <div class="modal-head">
-            <h3>🌙 گزارش جامع پایان روز</h3>
-            <button id="close-eod-btn" class="del-x">✕</button>
+            <h3><svg class="hico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 019.5 4 8 8 0 1020 14.5z"/></svg>گزارش جامع پایان روز</h3>
+            <button id="close-eod-btn" class="del-x" aria-label="بستن">✕</button>
         </div>
         <div class="eod-grid">
             <div class="eod-box">
-                <h4>⏱️ زمان مطالعه امروز</h4>
+                <h4><svg class="hico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg>زمان مطالعه امروز</h4>
                 <p id="eod-study-time" class="eod-big-num">0 دقیقه</p>
                 <small id="eod-test-summary">۰ تست حل شده</small>
             </div>
             <div class="eod-box">
-                <h4>⚠️ درس‌های ضعیف‌تر (نیازمند مرور)</h4>
+                <h4><svg class="hico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></svg>درس‌های ضعیف‌تر (نیازمند مرور)</h4>
                 <p id="eod-weak-subjects">همه دروس در وضعیت مطلوب هستند.</p>
             </div>
             <div class="eod-box full">
-                <h4>✅ کارهای انجام‌شده امروز</h4>
+                <h4><svg class="hico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>کارهای انجام‌شده امروز</h4>
                 <ul id="eod-completed-tasks" class="eod-list"></ul>
             </div>
             <div class="eod-box full highlight">
-                <h4>📅 برنامه فردا (کلاس‌های مدرسه + پیشنهاد مطالعه)</h4>
+                <h4><svg class="hico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>برنامه فردا (کلاس‌های مدرسه + پیشنهاد مطالعه)</h4>
                 <p id="eod-tomorrow-plan"></p>
             </div>
         </div>
-        <button onclick="window.print()" class="teal-btn" style="margin-top: 14px;">🖨️ چاپ / ذخیره PDF گزارش روز</button>
+        <button onclick="printEod()" class="btn-primary no-print" style="margin-top: 14px;">🖨️ چاپ / ذخیره PDF گزارش روز</button>
     </div>
 </div>
 
 <div class="app-layout hidden" id="main-app">
     <aside class="sidebar">
-        <div class="nav-icons">
-            <button class="nav-btn active" title="داشبورد" onclick="scrollToSection('top')">⊞</button>
-            <button class="nav-btn" title="ثبت مطالعه و تست" onclick="scrollToSection('log-section')">📝</button>
-            <button class="nav-btn" title="هدف‌ها و روند" onclick="scrollToSection('goals-section')">🎯</button>
-            <button class="nav-btn" title="برنامه هفتگی مدرسه" onclick="scrollToSection('school-schedule-section')">🏫</button>
-            <button class="nav-btn" title="دفترچه یادداشت دیجیتال" onclick="scrollToSection('notebook-section')">📓</button>
-            <button class="nav-btn" title="دفترچه خطاها" onclick="scrollToSection('mistakes-section')">❌</button>
-            <button class="nav-btn" title="گزارش پایان روز" id="sidebar-eod-btn">🌙</button>
-            <button class="nav-btn" title="تغییر تم روشن/تیره" id="theme-toggle">🌓</button>
+        <div class="nav-icons" role="navigation" aria-label="منوی اصلی">
+            <button class="nav-btn active" data-view="today" title="امروز" aria-label="امروز"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></button>
+            <button class="nav-btn" data-view="progress" title="پیشرفت و آزمون‌ها" aria-label="پیشرفت و آزمون‌ها"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></button>
+            <button class="nav-btn" data-view="notes" title="یادداشت و غلط‌نامه" aria-label="یادداشت و غلط‌نامه"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3z"/><path d="M9 9h6M9 13h6"/></svg></button>
+            <button class="nav-btn" data-view="plan" title="برنامه" aria-label="برنامه"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></button>
+            <button class="nav-btn" title="گزارش پایان روز" aria-label="گزارش پایان روز" id="sidebar-eod-btn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 019.5 4 8 8 0 1020 14.5z"/></svg></button>
+            <button class="nav-btn" title="تغییر تم روشن/تیره" aria-label="تغییر تم روشن/تیره" id="theme-toggle"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 010 18z" fill="currentColor"/></svg></button>
         </div>
-        <button class="nav-btn" title="خروج از حساب کاربری" id="logout-btn">🚪</button>
+        <button class="nav-btn" title="خروج از حساب کاربری" aria-label="خروج از حساب کاربری" id="logout-btn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg></button>
     </aside>
 
     <main class="main-content" id="top">
         <header class="welcome-header">
             <div>
-                <h1>سلام، <span id="user-name" title="برای تغییر اسم کلیک کن" style="cursor:pointer">کاربر</span>! 👋 <span id="sync-status" class="sync-badge">☁️ متصل</span></h1>
+                <h1>سلام، <span id="user-name" role="button" tabindex="0" title="برای تغییر اسم کلیک کن" style="cursor:pointer">کاربر</span>! 👋 <span id="sync-status" class="sync-badge" aria-live="polite">☁️ متصل</span></h1>
                 <p class="date-text">داشبورد هوشمند مطالعه، برنامه مدرسه و دفترچه یادداشت ابری</p>
             </div>
             <div class="header-tools">
-                <button id="open-eod-btn" class="eod-trigger-btn">🌙 گزارش پایان روز</button>
+                <button id="open-eod-btn" class="eod-trigger-btn"><svg class="bico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 019.5 4 8 8 0 1020 14.5z"/></svg>گزارش پایان روز</button>
                 <div class="quick-timer-pill">
-                    <span>⏱️</span>
-                    <select id="timer-subject"></select>
-                    <select id="timer-length" title="مدت تمرکز">
+                    <span class="timer-ico"><svg class="bico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg></span>
+                    <select id="timer-subject" aria-label="درس تایمر"></select>
+                    
+                    
+                    <strong id="timer-display">25:00</strong>
+                    <button id="start-timer" class="pill-btn start">شروع</button>
+                    <button id="pause-timer" class="pill-btn">توقف</button>
+                    
+                    <button id="enter-zen-btn" class="pill-btn" title="محیط تمرکز و صدای باران" aria-label="محیط تمرکز و صدای باران"><svg class="bico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 15v-3a8 8 0 0116 0v3"/><rect x="3" y="14" width="4" height="7" rx="1.5"/><rect x="17" y="14" width="4" height="7" rx="1.5"/></svg>محیط تمرکز</button>
+                    <details class="timer-more">
+                        <summary aria-label="تنظیمات تایمر" title="تنظیمات تایمر"><svg class="bico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></summary>
+                        <div class="timer-more-panel">
+                            <label>نوع مطالعه</label><select id="timer-type" aria-label="نوع مطالعه" title="نوع مطالعه">
+                        <option value="descriptive">تشریحی</option>
+                        <option value="test">تستی</option>
+                    </select>
+                            <label>مدت تمرکز</label><select id="timer-length" aria-label="مدت تمرکز" title="مدت تمرکز">
                         <option value="15">۱۵ دقیقه</option>
                         <option value="25">۲۵ دقیقه</option>
                         <option value="45">۴۵ دقیقه</option>
                         <option value="60">۶۰ دقیقه</option>
                     </select>
-                    <strong id="timer-display">25:00</strong>
-                    <button id="start-timer" class="pill-btn start">شروع</button>
-                    <button id="pause-timer" class="pill-btn">توقف</button>
-                    <button id="finish-early-btn" class="pill-btn" title="ثبت مطالعه تا همین لحظه">ثبت زودتر</button>
-                    <button id="enter-zen-btn" class="pill-btn" title="محیط تمرکز و صدای باران">🎧 محیط تمرکز</button>
+                            <button id="finish-early-btn" class="pill-btn" title="ثبت مطالعه تا همین لحظه" aria-label="ثبت مطالعه تا همین لحظه">ثبت زودتر</button>
+                        </div>
+                    </details>
                 </div>
             </div>
         </header>
 
-        <div id="weakness-radar" class="radar-banner">
-            <strong>📡 رادار هوشمند:</strong>
-            <span id="radar-text">در حال بررسی وضعیت دروس...</span>
-        </div>
+        <section id="today-card" class="white-card today-card" data-tab="today" aria-live="polite"></section>
 
-        <section class="stats-grid">
+        <section class="stats-grid" data-tab="today">
             <div class="stat-card">
                 <div class="card-top-row">
-                    <div class="stat-icon">📚</div>
+                    <div class="stat-icon"><svg class="bico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3z"/><path d="M9 9h6M9 13h6"/></svg></div>
                     <span id="trend-hours" class="trend-badge neutral">هفته جاری</span>
                 </div>
                 <div class="stat-value" id="stat-hours">0.0 ساعت</div>
@@ -198,7 +214,7 @@
 
             <div class="stat-card">
                 <div class="card-top-row">
-                    <div class="stat-icon">✍️</div>
+                    <div class="stat-icon"><svg class="bico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16z"/></svg></div>
                     <span id="trend-tests" class="trend-badge neutral">0 تست</span>
                 </div>
                 <div class="stat-value" id="stat-accuracy">0%</div>
@@ -207,7 +223,7 @@
 
             <div class="stat-card">
                 <div class="card-top-row">
-                    <div class="stat-icon">⚖️</div>
+                    <div class="stat-icon"><svg class="bico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M5 7h14M5 7l-3 7a3 3 0 006 0zM19 7l-3 7a3 3 0 006 0z"/></svg></div>
                     <span id="balance-badge" class="trend-badge neutral">متعادل</span>
                 </div>
                 <div class="stat-value" id="stat-balance">0% / 0%</div>
@@ -216,7 +232,7 @@
 
             <div class="stat-card">
                 <div class="card-top-row">
-                    <div class="stat-icon">⚡</div>
+                    <div class="stat-icon"><svg class="bico" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></div>
                     <span class="trend-badge neutral">سرعت تست</span>
                 </div>
                 <div class="stat-value" id="stat-speed">0 دقیقه</div>
@@ -224,7 +240,7 @@
             </div>
         </section>
 
-        <section class="middle-grid" id="chart-section">
+        <section class="middle-grid" id="chart-section" data-tab="today">
             <div class="white-card" id="log-section">
                 <div class="card-head">
                     <h3>ثبت مطالعه و تست</h3>
@@ -232,20 +248,8 @@
                 <form id="study-form">
                     <div class="form-row">
                         <div class="form-group">
-                            <label>درس:</label>
+                            <label for="subject-select">درس:</label>
                             <select id="subject-select" required></select>
-                        </div>
-                        <div class="form-group">
-                            <label>روز هفته:</label>
-                            <select id="day-select">
-                                <option value="شنبه">شنبه</option>
-                                <option value="یکشنبه">یکشنبه</option>
-                                <option value="دوشنبه">دوشنبه</option>
-                                <option value="سه‌شنبه">سه‌شنبه</option>
-                                <option value="چهارشنبه">چهارشنبه</option>
-                                <option value="پنج‌شنبه">پنج‌شنبه</option>
-                                <option value="جمعه">جمعه</option>
-                            </select>
                         </div>
                     </div>
 
@@ -259,41 +263,46 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label>نوع مطالعه:</label>
+                            <label for="study-type">نوع مطالعه:</label>
                             <select id="study-type">
-                                <option value="descriptive">📖 مطالعه تشریحی / درسنامه</option>
-                                <option value="test">🎯 تست‌زنی و حل تمرین</option>
+                                <option value="descriptive">مطالعه تشریحی / درسنامه</option>
+                                <option value="test">تست‌زنی و حل تمرین</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>مدت (دقیقه):</label>
-                            <input type="number" id="minutes-input" min="5" max="720" placeholder="مثلاً 60" required>
+                            <label for="minutes-input">مدت (دقیقه):</label>
+                            <input type="number" id="minutes-input" min="5" max="720" aria-label="مثلاً 60" placeholder="مثلاً 60" required>
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label>مبحث (اختیاری):</label>
-                            <input type="text" id="topic-input" placeholder="مثلاً: کاربرد مشتق">
+                            <label for="topic-input">مبحث (اختیاری):</label>
+                            <input type="text" id="topic-input" aria-label="مثلاً: کاربرد مشتق" placeholder="مثلاً: کاربرد مشتق">
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label>تعداد کل تست:</label>
-                            <input type="number" id="total-tests" min="0" max="500" placeholder="مثلاً 30">
+                            <label for="total-tests">تعداد کل تست:</label>
+                            <input type="number" id="total-tests" min="0" max="500" aria-label="مثلاً 30" placeholder="مثلاً 30">
                         </div>
                         <div class="form-group">
-                            <label>تعداد تست درست:</label>
-                            <input type="number" id="correct-tests" min="0" max="500" placeholder="مثلاً 22">
+                            <label for="correct-tests">تعداد تست درست:</label>
+                            <input type="number" id="correct-tests" min="0" max="500" aria-label="مثلاً 22" placeholder="مثلاً 22">
                         </div>
                     </div>
 
-                    <button type="submit" class="teal-btn">ثبت در کارنامه</button>
+                    <div class="form-group">
+                        <label for="blank-tests">تعداد نزده (اختیاری):</label>
+                        <input type="number" id="blank-tests" min="0" max="500" aria-label="تعداد تست نزده" placeholder="مثلاً 3">
+                    </div>
+
+                    <button type="submit" class="btn-primary">ثبت در کارنامه</button>
                 </form>
             </div>
 
-            <div class="white-card">
+            <div class="white-card chart-card">
                 <div class="card-head">
                     <h3>نمودار روند مطالعه و تست هفته</h3>
                     <div class="chart-legend-mini">
@@ -304,53 +313,73 @@
                 <div class="chart-wrapper">
                     <canvas id="weeklyWaveChart"></canvas>
                 </div>
+                <div id="week-insights" class="week-insights"></div>
             </div>
         </section>
 
-        <section class="white-card" id="goals-section">
-            <div class="card-head"><h3>🎯 هدف‌ها و روند بلندمدت</h3></div>
+        <section class="white-card" id="goals-section" data-tab="progress">
+            <div class="card-head"><h3><svg class="hico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8" fill="currentColor"/></svg>هدف‌ها و روند بلندمدت</h3></div>
             <div class="goals-layout">
                 <div class="goal-box">
-                    <h4>⏳ شمارش معکوس</h4>
+                    <h4><svg class="hico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12M6 21h12M7 3c0 5 5 6 5 9s-5 4-5 9M17 3c0 5-5 6-5 9s5 4 5 9"/></svg>شمارش معکوس</h4>
                     <div class="form-row">
-                        <input type="text" id="target-title" placeholder="عنوان (مثلاً کنکور)">
+                        <input type="text" id="target-title" aria-label="عنوان (مثلاً کنکور)" placeholder="عنوان (مثلاً کنکور)">
                         <input type="date" id="target-date">
                     </div>
                     <p id="countdown-text" class="countdown-text"></p>
                 </div>
                 <div class="goal-box">
-                    <h4>📌 هدف مطالعه‌ی هفتگی هر درس</h4>
+                    <h4><svg class="hico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5M9 3h6l-1 6 3 3v2H7v-2l3-3z"/></svg>هدف مطالعه‌ی هفتگی هر درس</h4>
                     <div class="form-row">
-                        <select id="goal-subject"></select>
-                        <input type="number" id="goal-hours" min="0.5" max="40" step="0.5" placeholder="ساعت در هفته">
-                        <button id="add-goal-btn" class="teal-btn small" type="button">افزودن</button>
+                        <select id="goal-subject" aria-label="درس هدف"></select>
+                        <input type="number" id="goal-hours" min="0.5" max="40" step="0.5" aria-label="ساعت در هفته" placeholder="ساعت در هفته">
+                        <button id="add-goal-btn" class="btn-primary small" type="button">افزودن</button>
                     </div>
                     <div id="goals-grid"></div>
                 </div>
             </div>
-            <h4 style="margin-top:16px">📈 مطالعه‌ی ۸ هفته‌ی اخیر (ساعت)</h4>
+            <h4 style="margin-top:16px"><svg class="hico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>مطالعه‌ی ۸ هفته‌ی اخیر (ساعت)</h4>
             <div class="chart-wrapper"><canvas id="longTermChart"></canvas></div>
         </section>
 
-        <section class="white-card" id="school-schedule-section">
+        <section class="white-card" id="mocks-section" data-tab="progress">
+            <div class="card-head"><h3>آزمون‌های آزمایشی</h3></div>
+            <div class="notebook-editor">
+                <div class="form-row">
+                    <input type="text" id="mock-title" placeholder="نام آزمون (مثلاً قلم‌چی ۱۸ آبان)">
+                    <input type="number" id="mock-percent" step="0.1" min="-34" max="100" placeholder="درصد کل">
+                    <input type="date" id="mock-date" aria-label="تاریخ آزمون">
+                </div>
+                <button id="add-mock" class="teal-btn small" type="button">ثبت آزمون</button>
+            </div>
+            <div class="chart-wrapper"><canvas id="mockChart"></canvas></div>
+            <ul id="mock-list" class="event-list"></ul>
+        </section>
+
+        <section class="white-card" id="heatmap-section" data-tab="progress">
+            <div class="card-head"><h3>نقشه‌ی مطالعه (۱۲ هفته‌ی اخیر)</h3></div>
+            <div id="heatmap" class="heatmap" role="img" aria-label="نقشه‌ی مطالعه"></div>
+        </section>
+
+        <section class="white-card" id="school-schedule-section" data-tab="plan">
             <div class="card-head">
-                <h3>🏫 برنامه هفتگی مدرسه</h3>
+                <h3><svg class="hico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10l9-6 9 6M5 10v10h14V10M10 20v-5h4v5"/></svg>برنامه هفتگی مدرسه</h3>
                 <div class="school-form-inline">
-                    <select id="school-day-select">
+                    <select id="school-day-select" aria-label="روز هفته">
                         <option value="شنبه">شنبه</option>
                         <option value="یکشنبه">یکشنبه</option>
                         <option value="دوشنبه">دوشنبه</option>
                         <option value="سه‌شنبه">سه‌شنبه</option>
                         <option value="چهارشنبه">چهارشنبه</option>
                     </select>
-                    <select id="school-period-select">
+                    <select id="school-period-select" aria-label="زنگ">
                         <option value="0">زنگ اول</option>
                         <option value="1">زنگ دوم</option>
                         <option value="2">زنگ سوم</option>
                         <option value="3">زنگ چهارم</option>
                     </select>
-                    <select id="school-subject-select"></select>
-                    <button id="save-school-slot" class="teal-btn small">ثبت در برنامه</button>
+                    <select id="school-subject-select" aria-label="درس"></select>
+                    <button id="save-school-slot" class="btn-primary small">ثبت در برنامه</button>
                 </div>
             </div>
             <div class="table-responsive">
@@ -369,55 +398,55 @@
             </div>
         </section>
 
-        <section class="white-card" id="notebook-section">
+        <section class="white-card" id="notebook-section" data-tab="notes">
             <div class="card-head">
-                <h3>📓 دفترچه یادداشت دیجیتال</h3>
-                <input type="text" id="note-search" class="search-input" placeholder="🔍 جستجو در یادداشت‌ها...">
+                <h3><svg class="hico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3z"/><path d="M9 9h6M9 13h6"/></svg>دفترچه یادداشت دیجیتال</h3>
+                <input type="text" id="note-search" class="search-input" aria-label="جستجو در یادداشت‌ها..." placeholder="جستجو در یادداشت‌ها...">
             </div>
             <div class="notebook-editor">
                 <div class="form-row">
-                    <select id="note-subject"></select>
-                    <input type="text" id="note-title" placeholder="عنوان یادداشت">
+                    <select id="note-subject" aria-label="درس یادداشت"></select>
+                    <input type="text" id="note-title" aria-label="عنوان یادداشت" placeholder="عنوان یادداشت">
                 </div>
-                <textarea id="note-body" rows="3" placeholder="متن کامل یادداشت..."></textarea>
-                <button id="add-note" class="teal-btn small">ذخیره در دفترچه</button>
+                <textarea id="note-body" rows="3" aria-label="متن کامل یادداشت..." placeholder="متن کامل یادداشت..."></textarea>
+                <button id="add-note" class="btn-primary small">ذخیره در دفترچه</button>
             </div>
             <div id="notes-grid" class="notes-cards-grid"></div>
         </section>
 
-        <section class="white-card" id="mistakes-section">
+        <section class="white-card" id="mistakes-section" data-tab="notes">
             <div class="card-head">
-                <h3>❌ دفترچه خطاها (غلط‌نامه)</h3>
-                <select id="mistake-filter" class="search-input">
+                <h3><svg class="hico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>دفترچه خطاها (غلط‌نامه)</h3>
+                <select id="mistake-filter" aria-label="فیلتر خطاها" class="search-input">
                     <option value="all">همه خطاها</option>
-                    <option value="due">🔔 فقط مرور امروز</option>
+                    <option value="due">فقط مرور امروز</option>
                 </select>
             </div>
             <div class="notebook-editor">
                 <div class="form-row">
-                    <select id="mistake-subject"></select>
-                    <input type="text" id="mistake-topic" placeholder="مبحث">
-                    <select id="mistake-reason"></select>
+                    <select id="mistake-subject" aria-label="درس خطا"></select>
+                    <input type="text" id="mistake-topic" aria-label="مبحث" placeholder="مبحث">
+                    <select id="mistake-reason" aria-label="دلیل خطا"></select>
                 </div>
-                <textarea id="mistake-body" rows="3" placeholder="صورت سؤال، پاسخ درست و دلیل اشتباه..."></textarea>
-                <button id="add-mistake" class="teal-btn small">ثبت خطا</button>
+                <textarea id="mistake-body" rows="3" aria-label="صورت سؤال، پاسخ درست و دلیل اشتباه..." placeholder="صورت سؤال، پاسخ درست و دلیل اشتباه..."></textarea>
+                <button id="add-mistake" class="btn-primary small">ثبت خطا</button>
             </div>
             <div id="mistake-stats" class="mistake-stats"></div>
             <div id="mistakes-grid" class="notes-cards-grid"></div>
         </section>
 
-        <section class="white-card" id="planner-section">
+        <section class="white-card" id="planner-section" data-tab="plan">
             <div class="card-head">
-                <h3>📅 برنامه‌ریز مطالعه شخصی (بعد از مدرسه)</h3>
+                <h3><svg class="hico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>برنامه‌ریز مطالعه شخصی (بعد از مدرسه)</h3>
                 <div class="planner-inline-controls">
                     <input type="number" id="daily-goal" value="4" min="1" max="14" title="ساعت مطالعه روزانه">
-                    <select id="focus-mode">
-                        <option value="smart-weak">🎯 هوشمند (اولویت امتحانات و دروس ضعیف)</option>
-                        <option value="balanced">⚖️ متعادل (همه دروس)</option>
-                        <option value="heavy-math">📐 تمرکز حسابان، گسسته، هندسه</option>
-                        <option value="heavy-science">🧪 تمرکز فیزیک و شیمی</option>
+                    <select id="focus-mode" aria-label="حالت برنامه‌ریز">
+                        <option value="smart-weak">هوشمند (اولویت امتحانات و دروس ضعیف)</option>
+                        <option value="balanced">متعادل (همه دروس)</option>
+                        <option value="heavy-math">تمرکز حسابان، گسسته، هندسه</option>
+                        <option value="heavy-science">تمرکز فیزیک و شیمی</option>
                     </select>
-                    <button id="generate-plan" class="teal-btn small">تولید برنامه</button>
+                    <button id="generate-plan" class="btn-primary small">تولید برنامه</button>
                 </div>
             </div>
             <div id="plan-output" class="lessons-list"></div>
@@ -429,21 +458,21 @@
             <div class="avatar" id="user-avatar">ع</div>
             <div>
                 <strong id="profile-name">کاربر</strong>
-                <span id="profile-username">@username</span>
+                <span id="profile-username" data-latin>@username</span>
             </div>
         </div>
 
         <div class="backup-box">
-            <button onclick="window.print()" class="action-chip primary">📄 PDF</button>
-            <button id="export-json" class="action-chip">💾 بکاپ</button>
-            <label for="import-json" class="action-chip">📂 بازیابی</label>
+            
+            <button id="export-json" class="action-chip"><svg class="bico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h11l3 3v15H5z"/><path d="M8 3v5h7V3M8 21v-7h8v7"/></svg>بکاپ</button>
+            <label for="import-json" class="action-chip"><svg class="bico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg>بازیابی</label>
             <input type="file" id="import-json" accept=".json" hidden>
         </div>
 
         <div class="calendar-widget">
             <div class="cal-top-bar">
-                <h4>📅 تقویم امتحانات ماه</h4>
-                <select id="month-select" class="mini-month-select">
+                <h4><svg class="hico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>تقویم امتحانات ماه</h4>
+                <select id="month-select" aria-label="ماه" class="mini-month-select">
                     <option value="فروردین">فروردین</option>
                     <option value="اردیبهشت">اردیبهشت</option>
                     <option value="خرداد">خرداد</option>
@@ -459,8 +488,8 @@
                 </select>
             </div>
             <div class="exam-add-row">
-                <input type="number" id="exam-day-input" min="1" max="31" placeholder="روز (۱-۳۱)">
-                <select id="exam-subject-select"></select>
+                <input type="number" id="exam-day-input" min="1" max="31" aria-label="روز ماه" placeholder="روز ماه">
+                <select id="exam-subject-select" aria-label="درس امتحان"></select>
                 <button id="add-exam-btn" class="add-exam-btn">+</button>
             </div>
             <div class="month-weekdays">
@@ -471,21 +500,22 @@
         </div>
 
         <div class="side-section">
-            <h4>✅ کارهای امروز (To-Do)</h4>
+            <h4><svg class="hico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>کارهای امروز (To-Do)</h4>
             <div class="todo-input-row">
-                <input type="text" id="todo-input" placeholder="مثلاً: حل تمرین شیمی...">
+                <input type="text" id="todo-input" aria-label="مثلاً: حل تمرین شیمی..." placeholder="مثلاً: حل تمرین شیمی...">
                 <button id="add-todo-btn" class="add-note-btn">+</button>
             </div>
             <ul id="todo-list" class="todo-list"></ul>
         </div>
 
         <div class="side-section">
-            <h4>🕒 کارنامه فعالیت‌های اخیر</h4>
+            <h4><svg class="hico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>کارنامه فعالیت‌های اخیر</h4>
             <ul id="history-list" class="event-list"></ul>
         </div>
     </aside>
 </div>
 
-<script src="script.js"></script>
+<script defer src="script.js"></script>
+<div id="toast-root" class="toast-root" aria-live="polite"></div>
 </body>
 </html>
